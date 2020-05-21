@@ -50,7 +50,6 @@ jib {
 
 task dockerLocalStop() {
     doLast {
-
         exec {
             commandLine("docker stop ${containerName}".split(' '))
         }
@@ -59,7 +58,6 @@ task dockerLocalStop() {
 }
 
 task dockerLocalRun() {
-
     dependsOn dockerLocalStop
     doLast {
         println("\n 도커 빌드 시작 imageName : ${imageName}, container: ${containerName}")
@@ -74,6 +72,8 @@ task dockerLocalRun() {
         println('\n 도커 빌드 완료')
     }
 }
+
+// todo docker rm or stop 시 exception?
 
 test {
     useJUnitPlatform()
