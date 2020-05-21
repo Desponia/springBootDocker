@@ -20,3 +20,8 @@ jenv local 1.8.0.252
 ```groovy
 id 'com.google.cloud.tools.jib' version '1.0.0'
 ```
+```groovy
+./gradlew clean bootJar jibDockerBuild dockerLocalRun --stacktrace
+```
+
+localhost/hello/{name}
