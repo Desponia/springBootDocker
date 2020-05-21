@@ -1,0 +1,80 @@
+plugins {
+    id 'org.springframework.boot' version '2.3.0.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'java'
+    id 'com.google.cloud.tools.jib' version '1.0.0'
+}
+
+group = 'com.coalcellar'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+def containerName = "my-docker-boot"
+def imageName = "${project.name}:${project.version}"
+
+jib {
+    allowInsecureRegistries = true
+    to {
+        image = imageName
+    }
+    container {
+        // Set JVM options.
+        jvmFlags = ['-XX:+UnlockExperimentalVMOptions', '-XX:+UseCGroupMemoryLimitForHeap', '-Dserver.port=8080']
+        // Expose different port.
+        ports = ['8080']
+        // Add labels.
+        labels = [maintainer: 'jidolstar']
+    }
+}
+
+task dockerLocalStop() {
+    doLast {
+
+        exec {
+            commandLine("docker stop ${containerName}".split(' '))
+        }
+        println('\n 도커 빌드 STOP')
+    }
+}
+
+task dockerLocalRun() {
+
+    dependsOn dockerLocalStop
+    doLast {
+        println("\n 도커 빌드 시작 imageName : ${imageName}, container: ${containerName}")
+
+        exec {
+            commandLine("docker rm ${containerName}".split(' '))
+        }
+
+        exec {
+            commandLine("docker run -d -p 80:8080 --name ${containerName} ${imageName}".split(' '))
+        }
+        println('\n 도커 빌드 완료')
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
